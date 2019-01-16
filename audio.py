@@ -103,3 +103,18 @@ class AcousticExtractor:
         if time_first:
             mel_spec = mel_spec.T
         return mel_spec
+
+    def npow(self, S=None, y=None, time_first=True):
+        if S is not None:
+            if time_first:
+                S_ = S.T
+            else:
+                S_ = S
+            pow = librosa.feature.rmse(S=S_, frame_length=self.win_len,
+                                       hop_length=self.win_shift)
+        elif y is not None:
+            pow = librosa.feature.rmse(y=y, frame_length=self.win_len,
+                                       hop_length=self.win_shift)
+        else:
+            raise ValueError("Both mag and y are None!!")
+        return np.squeeze(pow)
