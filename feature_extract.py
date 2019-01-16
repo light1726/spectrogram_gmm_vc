@@ -2,6 +2,8 @@ import pickle
 import argparse
 import os
 import librosa
+import numpy as np
+import matplotlib.pyplot as plt
 from audio import AcousticExtractor
 
 
@@ -45,6 +47,8 @@ def main():
     tgt_melspec_lst = []
     src_npow_lst = []
     tgt_npow_lst = []
+    all_pow_lst_src = []
+    all_pow_lst_tgt = []
     ae = AcousticExtractor(fs=args.sr, fftl=args.n_fft, shiftms=args.win_shiftms,
                            win_len=args.win_lenms, minf0=args.minf, maxf0=args.maxf,
                            n_mels=args.n_mels)
@@ -56,6 +60,7 @@ def main():
         src_melspec_lst.append(melspec)
         npow = ae.npow(S=melspec)
         src_npow_lst.append(npow)
+        all_pow_lst_src += npow.tolist() if type(npow) is np.ndarray else npow
     # extract target speaker features
     for wav_f in tgt_wav_lst:
         wav_arr, sr = librosa.load(wav_f, sr=None)
@@ -64,6 +69,7 @@ def main():
         tgt_melspec_lst.append(melspec)
         npow = ae.npow(S=melspec)
         tgt_npow_lst.append(npow)
+        all_pow_lst_tgt += npow.tolist() if type(npow) is np.ndarray else npow
 
     # save source and target speaker features
     melspec_dict = {'src': src_melspec_lst, 'tgt': tgt_melspec_lst}
@@ -80,6 +86,22 @@ def main():
     with open(os.path.join(out_dir, 'npow_dict.pkl'), 'wb') as f:
         pickle.dump(npow_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
         print('NPow dict saved to {}'.format(os.path.join(out_dir, 'npow_dict.pkl')))
+
+    # save power histogram
+    plt.figure()
+    plt.hist(all_pow_lst_src, 500, density=True)
+    plt.title('src speaker power')
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'src_pow_hist.png'))
+    print('src speaker power histogram saved to {}'.format(
+        os.path.join(out_dir, 'src_pow_hist.png')))
+    plt.figure()
+    plt.hist(all_pow_lst_tgt, 500, density=True)
+    plt.title('tgt speaker power')
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'tgt_pow_hist.png'))
+    print('tgt speaker power histogram saved to {}'.format(
+        os.path.join(out_dir, 'tgt_pow_hist.png')))
     return
 
 
