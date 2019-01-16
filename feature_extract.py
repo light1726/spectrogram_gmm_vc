@@ -24,8 +24,8 @@ def main():
     parser.add_argument('--maxf', help='minimum f0', default=500.0)
     parser.add_argument('--sr', help='sample rate', default=16000)
     parser.add_argument('--n_fft', help='number of fft points', default=512)
-    parser.add_argument('--win_lenms', help='window length in ms', default=400)
-    parser.add_argument('--win_shiftms', help='window shift in ms', default=80)
+    parser.add_argument('--win_lenms', help='window length in ms', default=25.0)
+    parser.add_argument('--win_shiftms', help='window shift in ms', default=5.0)
     parser.add_argument('--n_mels', help='number of mel bins', default=80)
     args = parser.parse_args()
     src_dir = args.src
@@ -89,14 +89,14 @@ def main():
 
     # save power histogram
     plt.figure()
-    plt.hist(all_pow_lst_src, 500, density=True)
+    plt.hist(all_pow_lst_src, 100, density=True)
     plt.title('src speaker power')
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'src_pow_hist.png'))
     print('src speaker power histogram saved to {}'.format(
         os.path.join(out_dir, 'src_pow_hist.png')))
     plt.figure()
-    plt.hist(all_pow_lst_tgt, 500, density=True)
+    plt.hist(all_pow_lst_tgt, 100, density=True)
     plt.title('tgt speaker power')
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'tgt_pow_hist.png'))

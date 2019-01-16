@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    wav_f = 'E:\\luhuifile\\rebecca\\210001.wav'
+    wav_f = 'C:\\Users\\LUHUI\\Desktop\\HCSI\\paper\\voice_conversion\\cmu_arctic\\cmu_us_bdl_arctic\\wav\\arctic_a0005.wav'
     wav_arr, sr = librosa.load(wav_f, sr=None)
     ae = AcousticExtractor()
     spec_mag, phase = ae.spectrogram(wav_arr)

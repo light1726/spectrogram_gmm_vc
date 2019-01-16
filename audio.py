@@ -117,4 +117,5 @@ class AcousticExtractor:
                                        hop_length=self.win_shift)
         else:
             raise ValueError("Both mag and y are None!!")
-        return np.squeeze(pow)
+
+        return librosa.core.power_to_db(np.squeeze(pow), ref=np.max)
