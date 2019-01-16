@@ -4,6 +4,7 @@ import numpy as np
 import scipy.sparse
 import sklearn.mixture
 from sklearn.mixture.gaussian_mixture import _compute_precision_cholesky
+from delta import construct_static_and_delta_matrix
 
 
 class GMMTrainer(object):
