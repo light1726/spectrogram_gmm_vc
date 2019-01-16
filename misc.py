@@ -3,7 +3,8 @@
 import os
 import numpy as np
 from scipy.signal import firwin, lfilter
-
+from extfrm import extfrm
+from delta import static_delta
 
 def low_cut_filter(x, fs, cutoff=70):
     """Low cut filter
@@ -32,38 +33,6 @@ def low_cut_filter(x, fs, cutoff=70):
     lcf_x = lfilter(fil, 1, x)
 
     return lcf_x
-
-
-def read_feats(listf, h5dir, ext='mcep'):
-    """HDF5 handler
-    Create list consisting of arrays listed in the list
-
-    Parameters
-    ---------
-    listf : str,
-        Path of list file
-    h5dir : str,
-        Path of hdf5 directory
-    ext : str,
-        `mcep` : mel-cepstrum
-        `f0` : F0
-
-    Returns
-    ---------
-    datalist : list of arrays
-
-    """
-
-    datalist = []
-    with open(listf, 'r') as fp:
-        for line in fp:
-            f = line.rstrip()
-            h5f = os.path.join(h5dir, f + '.h5')
-            h5 = HDF5(h5f, mode='r')
-            datalist.append(h5.read(ext))
-            h5.close()
-
-    return datalist
 
 
 def extsddata(data, npow, power_threshold=-20):
