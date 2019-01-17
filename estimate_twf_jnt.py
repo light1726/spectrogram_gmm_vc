@@ -1,4 +1,5 @@
 import os
+import pickle
 import argparse
 
 from GMM import GMMConvertor, GMMTrainer
@@ -137,7 +138,7 @@ def align_feature_vectors(odata, onpows, tdata, tnpows, pconf,
                 gtwf = None
             if it > 1:
                 cvdata = cvgmm.convert(static_delta(odata[i][:, sd:]),
-                                       cvtype=pconf.GMM_mcep_cvtype)
+                                       cvtype=pconf.cvtype)
             jdata, twf, mcd = get_alignment(odata[i],
                                             onpows[i],
                                             tdata[i],
@@ -155,12 +156,72 @@ def align_feature_vectors(odata, onpows, tdata, tnpows, pconf,
 
         if it != itnum:
             # train GMM, if not final iteration
-            datagmm = GMMTrainer(n_mix=pconf.GMM_mcep_n_mix,
-                                 n_iter=pconf.GMM_mcep_n_iter,
-                                 covtype=pconf.GMM_mcep_covtype)
+            datagmm = GMMTrainer(n_mix=pconf.n_mix,
+                                 n_iter=pconf.n_iter,
+                                 covtype=pconf.covtype)
             datagmm.train(jnt_data)
-            cvgmm = GMMConvertor(n_mix=pconf.GMM_mcep_n_mix,
-                                 covtype=pconf.GMM_mcep_covtype)
+            cvgmm = GMMConvertor(n_mix=pconf.n_mix,
+                                 covtype=pconf.covtype)
             cvgmm.open_from_param(datagmm.param)
         it += 1
     return jfvs, twfs
+
+
+def pickle_read(pkl_f):
+    with open(pkl_f, 'rb') as f:
+        var = pickle.load(f)
+        return var
+
+
+def pickle_save(var, path):
+    with open(path, 'wb') as f:
+        pickle.dump(var, f, protocol=pickle.HIGHEST_PROTOCOL)
+    print('Successfully save var to {}'.format(path))
+    return
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='estimate the DTW function and the joint features')
+    parser.add_argument('--melspec', help='Melspec data directory')
+    parser.add_argument('--npow', help='Npow speaker data directory')
+    parser.add_argument('--out_dir', help='Output directory')
+    parser.add_argument('--s_npow_th', default=-20.,
+                        help='Source speaker npow threshold')
+    parser.add_argument('--t_npow_th', default=-15.,
+                        help='Target speaker npow threshold')
+    parser.add_argument('--n_mix', default=32,
+                        help='Number of mixture components')
+    parser.add_argument('--n_iter', default=100,
+                        help='Number of iterations to get GMM model')
+    parser.add_argument('--covtype', default='full',
+                        help='GMM covariance type')
+    parser.add_argument('--cvtype', default='mlpg',
+                        help='conversion mode')
+    parser.add_argument('--jnt_n_iter', default=3,
+                        help='Number of iterations to get joint features')
+    conf = parser.parse_args()
+    melspec_dict = pickle_read(conf.melspec)
+    npow_dict = pickle_read(conf.npow)
+    print('## Alignment mlespec ##')
+    jmelspc_lst, twfs = align_feature_vectors(odata=melspec_dict['src'],
+                                              onpows=npow_dict['src'],
+                                              tdata=melspec_dict['tgt'],
+                                              tnpows=npow_dict['tgt'],
+                                              pconf=conf,
+                                              opow=conf.s_npow_th,
+                                              tpow=conf.t_npow_th,
+                                              itnum=conf.jnt_n_iter,
+                                              sd=0)
+    jnt_melspec = transform_jnt(jmelspc_lst)
+    if not os.path.isdir(conf.out_dir):
+        print('Output directory {} does not exist, create one'.format(conf.out_dir))
+    print('Save jnt_melspec and twfs to {}'.format(conf.out_dir))
+    pickle_save(jnt_melspec, os.path.join(conf.out_dir, 'jnt_melspc.pkl'))
+    pickle_save(twfs, os.path.join(conf.out_dir, 'twf.pkl'))
+    print('Done!')
+    return
+
+
+if __name__ == '__main__':
+    main()
