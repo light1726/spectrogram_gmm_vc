@@ -6,6 +6,7 @@ from scipy.signal import firwin, lfilter
 from extfrm import extfrm
 from delta import static_delta
 
+
 def low_cut_filter(x, fs, cutoff=70):
     """Low cut filter
 

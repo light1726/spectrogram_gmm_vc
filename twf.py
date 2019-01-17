@@ -5,7 +5,7 @@ from dtw import dtw
 from fastdtw import fastdtw
 from dtw_c import dtw_c
 
-from sprocket.util import melcd
+from distance import melcd
 
 
 def estimate_twf(orgdata, tardata, distance='melcd', fast=True, otflag=None):
